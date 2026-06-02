@@ -194,9 +194,72 @@ body {
   .form-row,.form-row-3 { grid-template-columns:1fr; }
   .form-body { padding:20px; }
 }
+
+/* PIN SCREEN */
+.pin-screen {
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background:linear-gradient(135deg,#0d1b2a 0%,#1a3a5c 100%);
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999; padding:20px;
+}
+.pin-card {
+  background:#fff; border-radius:20px; padding:36px 32px;
+  max-width:380px; width:100%; text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.pin-logo { font-size:48px; margin-bottom:12px; }
+.pin-title { font-size:20px; font-weight:800; color:var(--navy); margin-bottom:6px; }
+.pin-sub   { font-size:13px; color:var(--text-dim); margin-bottom:28px; }
+.pin-input {
+  width:100%; padding:14px; text-align:center;
+  font-size:24px; font-weight:800; letter-spacing:8px;
+  border:2px solid var(--border); border-radius:12px;
+  font-family:'DM Mono',monospace; background:var(--bg);
+  margin-bottom:16px; color:var(--navy);
+}
+.pin-input:focus { outline:none; border-color:var(--blue); background:#fff; }
+.pin-btn {
+  width:100%; padding:14px; background:var(--blue); color:#fff;
+  border:none; border-radius:12px; font-size:15px; font-weight:700;
+  cursor:pointer; font-family:'Syne',sans-serif; margin-bottom:12px;
+  transition:background 0.2s;
+}
+.pin-btn:hover { background:var(--navy); }
+.pin-error {
+  color:var(--red); font-size:13px; margin-bottom:12px;
+  display:none; padding:10px; background:var(--red-light);
+  border-radius:8px;
+}
+.pin-error.show { display:block; }
+.pin-hint { font-size:11px; color:var(--text-dim); }
+.pin-dots { display:flex; justify-content:center; gap:8px; margin-bottom:20px; }
+.pin-dot { width:12px; height:12px; border-radius:50%; background:var(--border); transition:background 0.2s; }
+.pin-dot.filled { background:var(--blue); }
 </style>
 </head>
 <body>
+
+<!-- PIN SCREEN -->
+<div class="pin-screen" id="pinScreen">
+  <div class="pin-card">
+    <div class="pin-logo">🔐</div>
+    <div class="pin-title">ICTC Secure Login</div>
+    <div class="pin-sub">Enter your 4-digit ICTC PIN to access the reporting form</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="dot0"></div>
+      <div class="pin-dot" id="dot1"></div>
+      <div class="pin-dot" id="dot2"></div>
+      <div class="pin-dot" id="dot3"></div>
+    </div>
+    <input type="password" class="pin-input" id="pinInput"
+      maxlength="4" placeholder="••••"
+      oninput="onPinInput()" onkeypress="if(event.key==='Enter') checkPin()">
+    <div class="pin-error" id="pinError">❌ Invalid PIN. Please contact your supervisor.</div>
+    <button class="pin-btn" onclick="checkPin()">Login →</button>
+    <div class="pin-hint">Contact Assam SACS for your ICTC PIN</div>
+  </div>
+</div>
+
 
 <div class="page-header">
   <div class="page-logo">🏥</div>
@@ -637,6 +700,96 @@ function resetForm(){
   document.querySelector(".steps").style.display = "flex";
   goStep(1);
 }
+
+
+// ── PIN SYSTEM ──────────────────────────────────
+// District-wise PINs
+// Format: "DISTRICTNAME": "PIN"
+var ICTC_PINS = {
+  "MASTER":        "0000",  // Master PIN for Program Officers
+  "Baksa":         "1001",
+  "Barpeta":       "1002",
+  "Biswanath":     "1003",
+  "Bongaigaon":    "1004",
+  "Cachar":        "1005",
+  "Charaideo":     "1006",
+  "Chirang":       "1007",
+  "Darrang":       "1008",
+  "Dhemaji":       "1009",
+  "Dhubri":        "1010",
+  "Dibrugarh":     "1011",
+  "Dima Hasao":    "1012",
+  "Goalpara":      "1013",
+  "Golaghat":      "1014",
+  "Hailakandi":    "1015",
+  "Hojai":         "1016",
+  "Jorhat":        "1017",
+  "Kamrup Metro":  "1018",
+  "Kamrup Rural":  "1019",
+  "Karbi Anglong": "1020",
+  "Karimganj":     "1021",
+  "Kokrajhar":     "1022",
+  "Lakhimpur":     "1023",
+  "Majuli":        "1024",
+  "Morigaon":      "1025",
+  "Nagaon":        "1026",
+  "Nalbari":       "1027",
+  "Sivasagar":     "1028",
+  "Sonitpur":      "1029",
+  "South Salmara": "1030",
+  "Tinsukia":      "1031",
+  "Udalguri":      "1032",
+  "West Karbi Anglong": "1033",
+  "Bajali":        "1034",
+  "Tamulpur":      "1035"
+};
+
+var currentDistrict = "";
+
+function onPinInput(){
+  var val = document.getElementById("pinInput").value;
+  for(var i=0;i<4;i++){
+    var dot = document.getElementById("dot"+i);
+    dot.className = "pin-dot" + (i < val.length ? " filled" : "");
+  }
+  document.getElementById("pinError").classList.remove("show");
+  if(val.length === 4) checkPin();
+}
+
+function checkPin(){
+  var pin = document.getElementById("pinInput").value.trim();
+  var matched = false;
+  var matchedDistrict = "";
+
+  Object.keys(ICTC_PINS).forEach(function(district){
+    if(ICTC_PINS[district] === pin){
+      matched = true;
+      matchedDistrict = district;
+    }
+  });
+
+  if(matched){
+    currentDistrict = matchedDistrict;
+    document.getElementById("pinScreen").style.display = "none";
+
+    // Auto-select district if not master PIN
+    if(matchedDistrict !== "MASTER"){
+      var distSel = document.getElementById("fDistrict");
+      distSel.value = matchedDistrict;
+      distSel.dispatchEvent(new Event("change"));
+      onDistrictChange();
+      // Lock district dropdown
+      distSel.disabled = true;
+    }
+  } else {
+    document.getElementById("pinError").classList.add("show");
+    document.getElementById("pinInput").value = "";
+    for(var i=0;i<4;i++){
+      document.getElementById("dot"+i).className = "pin-dot";
+    }
+  }
+}
+
 </script>
 </body>
 </html>
