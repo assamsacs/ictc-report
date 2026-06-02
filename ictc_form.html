@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICTC Daily Report — Assam SACS</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f4f8;
+  --white: #ffffff;
+  --navy: #0d1b2a;
+  --blue: #1a56db;
+  --blue-light: #ebf2ff;
+  --red: #dc2626;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --border: #e2e8f0;
+  --text: #0d1b2a;
+  --text-dim: #64748b;
+  --shadow: 0 2px 16px rgba(13,27,42,0.10);
+  --shadow-lg: 0 8px 40px rgba(13,27,42,0.16);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Syne',sans-serif;
+  background: linear-gradient(135deg,#0d1b2a 0%,#1a3a5c 50%,#0d1b2a 100%);
+  min-height:100vh;
+  display:flex; flex-direction:column; align-items:center;
+  padding:32px 16px;
+}
+
+/* LOGO HEADER */
+.page-header {
+  text-align:center; margin-bottom:28px;
+}
+.page-logo {
+  width:64px; height:64px;
+  background:linear-gradient(135deg,#1a56db,#60a5fa);
+  border-radius:18px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; margin:0 auto 12px;
+  box-shadow:0 4px 20px rgba(26,86,219,0.4);
+}
+.page-title { color:#fff; font-size:22px; font-weight:800; letter-spacing:0.2px; }
+.page-sub   { color:rgba(255,255,255,0.5); font-size:13px; margin-top:4px; }
+
+/* FORM CARD */
+.form-card {
+  background:var(--white);
+  border-radius:20px;
+  box-shadow:var(--shadow-lg);
+  width:100%; max-width:580px;
+  overflow:hidden;
+}
+.form-band {
+  background:linear-gradient(135deg,#0d1b2a,#1a56db);
+  padding:24px 28px;
+}
+.form-band h2 { color:#fff; font-size:17px; font-weight:800; margin-bottom:4px; }
+.form-band p  { color:rgba(255,255,255,0.6); font-size:12px; }
+
+.form-body { padding:28px; }
+
+/* STEP INDICATOR */
+.steps {
+  display:flex; gap:0; margin-bottom:28px;
+  background:var(--bg); border-radius:10px; padding:4px;
+}
+.step {
+  flex:1; text-align:center; padding:8px 4px;
+  border-radius:8px; font-size:11px; font-weight:600;
+  color:var(--text-dim); cursor:pointer; transition:all 0.2s;
+}
+.step.active { background:var(--white); color:var(--blue); box-shadow:var(--shadow); }
+.step.done   { color:var(--green); }
+.step-num { font-size:14px; font-weight:800; display:block; margin-bottom:2px; }
+
+/* FORM SECTIONS */
+.form-section { display:none; }
+.form-section.active { display:block; }
+
+/* FORM ELEMENTS */
+.form-group { margin-bottom:20px; }
+.form-label {
+  display:block; font-size:13px; font-weight:700;
+  color:var(--navy); margin-bottom:7px;
+}
+.form-label .req { color:var(--red); margin-left:2px; }
+.form-label .hint { font-size:11px; color:var(--text-dim); font-weight:400; margin-left:6px; }
+
+.form-control {
+  width:100%; padding:11px 14px;
+  border:1.5px solid var(--border); border-radius:10px;
+  font-size:14px; font-family:'Syne',sans-serif; color:var(--text);
+  background:var(--bg); transition:all 0.2s;
+  appearance:none; -webkit-appearance:none;
+}
+.form-control:focus { outline:none; border-color:var(--blue); background:#fff; box-shadow:0 0 0 3px rgba(26,86,219,0.08); }
+.form-control:disabled { opacity:0.5; cursor:not-allowed; }
+.form-control.error { border-color:var(--red); background:#fff5f5; }
+
+/* SELECT WRAPPER */
+.select-wrap { position:relative; }
+.select-wrap::after {
+  content:"▾"; position:absolute; right:14px; top:50%;
+  transform:translateY(-50%); color:var(--text-dim);
+  pointer-events:none; font-size:14px;
+}
+
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+/* SELECTED INDICATOR */
+.selected-info {
+  background:var(--blue-light); border:1px solid rgba(26,86,219,0.2);
+  border-radius:8px; padding:10px 14px; margin-bottom:20px;
+  font-size:12px; color:var(--blue); display:none;
+}
+.selected-info.show { display:flex; align-items:center; gap:8px; }
+
+/* POSITIVITY INDICATOR */
+.positivity-indicator {
+  background:var(--bg); border-radius:10px;
+  padding:12px 16px; margin-top:12px; display:none;
+}
+.positivity-indicator.show { display:block; }
+.pos-label { font-size:11px; color:var(--text-dim); margin-bottom:6px; }
+.pos-bar   { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.pos-fill  { height:8px; border-radius:4px; transition:width 0.4s ease; }
+.pos-rate  { font-size:13px; font-weight:700; margin-top:6px; font-family:'DM Mono',monospace; }
+
+/* BUTTONS */
+.btn-row { display:flex; gap:10px; margin-top:24px; }
+.btn {
+  flex:1; padding:13px; border:none; border-radius:10px;
+  font-size:14px; font-weight:700; cursor:pointer;
+  font-family:'Syne',sans-serif; transition:all 0.2s;
+}
+.btn-primary { background:var(--blue); color:#fff; }
+.btn-primary:hover { background:#1343b0; transform:translateY(-1px); box-shadow:0 4px 12px rgba(26,86,219,0.3); }
+.btn-secondary { background:var(--bg); color:var(--text-dim); border:1.5px solid var(--border); flex:0.4; }
+.btn-secondary:hover { background:var(--border); }
+.btn-submit { background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; }
+.btn-submit:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(22,163,74,0.3); }
+
+/* SUCCESS */
+.success-screen {
+  display:none; text-align:center; padding:32px 20px;
+}
+.success-screen.show { display:block; }
+.success-icon {
+  width:72px; height:72px; background:var(--green-light);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:36px; margin:0 auto 16px;
+  animation:popIn 0.4s ease;
+}
+@keyframes popIn{0%{transform:scale(0)}80%{transform:scale(1.1)}100%{transform:scale(1)}}
+.success-title { font-size:20px; font-weight:800; color:var(--navy); margin-bottom:8px; }
+.success-sub   { font-size:13px; color:var(--text-dim); margin-bottom:20px; }
+.success-summary {
+  background:var(--bg); border-radius:12px; padding:16px;
+  text-align:left; margin-bottom:20px;
+}
+.ss-row { display:flex; justify-content:space-between; padding:6px 0;
+  border-bottom:1px solid var(--border); font-size:13px; }
+.ss-row:last-child { border-bottom:none; }
+.ss-label { color:var(--text-dim); }
+.ss-value { font-weight:700; color:var(--navy); }
+.btn-new { display:inline-block; padding:12px 28px; background:var(--blue); color:#fff;
+  border-radius:10px; font-size:14px; font-weight:700; cursor:pointer;
+  border:none; font-family:'Syne',sans-serif; }
+
+/* ERROR MSG */
+.err-msg { color:var(--red); font-size:11px; margin-top:4px; display:none; }
+.err-msg.show { display:block; }
+
+/* SHEET CONFIG */
+.sheet-config {
+  background:linear-gradient(135deg,#fffbeb,#fef3c7);
+  border:1px solid #fcd34d; border-radius:10px;
+  padding:14px 16px; margin-bottom:20px; font-size:12px; color:#92400e;
+}
+.sheet-config strong { display:block; margin-bottom:4px; font-size:13px; }
+.sheet-id-input {
+  width:100%; padding:8px 12px; margin-top:8px;
+  border:1px solid #fcd34d; border-radius:8px;
+  font-size:12px; font-family:'DM Mono',monospace;
+  background:#fffbeb; color:#92400e;
+}
+.sheet-id-input:focus { outline:none; border-color:#f59e0b; }
+
+@media(max-width:480px){
+  .form-row,.form-row-3 { grid-template-columns:1fr; }
+  .form-body { padding:20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="page-logo">🏥</div>
+  <div class="page-title">Assam SACS — ICTC Report</div>
+  <div class="page-sub">HIV Testing Daily Reporting System</div>
+</div>
+
+<div class="form-card">
+  <div class="form-band">
+    <h2>📋 Daily HIV Testing Data Entry</h2>
+    <p>Fill and submit once daily before 5:00 PM | All fields marked * are required</p>
+  </div>
+
+  <div class="form-body">
+
+    <!-- STEP INDICATOR -->
+    <div class="steps">
+      <div class="step active" id="step1tab"><span class="step-num">1</span>Location</div>
+      <div class="step" id="step2tab"><span class="step-num">2</span>Testing Data</div>
+      <div class="step" id="step3tab"><span class="step-num">3</span>Breakdown</div>
+    </div>
+
+    <!-- STEP 1: LOCATION -->
+    <div class="form-section active" id="step1">
+
+      <div class="form-group">
+        <label class="form-label">District <span class="req">*</span></label>
+        <div class="select-wrap">
+          <select class="form-control" id="fDistrict" onchange="onDistrictChange()">
+            <option value="">— Select District —</option>
+          </select>
+        </div>
+        <div class="err-msg" id="errDistrict">Please select a district</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Block <span class="req">*</span>
+          <span class="hint">Select district first</span>
+        </label>
+        <div class="select-wrap">
+          <select class="form-control" id="fBlock" disabled onchange="onBlockChange()">
+            <option value="">— Select Block —</option>
+          </select>
+        </div>
+        <div class="err-msg" id="errBlock">Please select a block</div>
+      </div>
+
+      <div class="selected-info" id="locationInfo">
+        📍 <span id="locationText"></span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ICTC Center Name <span class="req">*</span></label>
+        <input type="text" class="form-control" id="fICTC"
+          placeholder="e.g. CHC Pathsala ICTC, PHC Boko ICTC">
+        <div class="err-msg" id="errICTC">Please enter ICTC center name</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Reporting Date <span class="req">*</span></label>
+        <input type="date" class="form-control" id="fDate">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goStep(2)">Next: Testing Data →</button>
+      </div>
+    </div>
+
+    <!-- STEP 2: TESTING DATA -->
+    <div class="form-section" id="step2">
+
+      <div class="selected-info show" id="locationInfo2">
+        📍 <span id="locationText2"></span>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Total Tested Today <span class="req">*</span></label>
+          <input type="number" class="form-control" id="fTested"
+            placeholder="0" min="0" oninput="calcPositivity()">
+          <div class="err-msg" id="errTested">Please enter number tested</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Positive Today <span class="req">*</span></label>
+          <input type="number" class="form-control" id="fPositive"
+            placeholder="0" min="0" oninput="calcPositivity()">
+          <div class="err-msg" id="errPositive">Cannot exceed total tested</div>
+        </div>
+      </div>
+
+      <!-- Live positivity indicator -->
+      <div class="positivity-indicator" id="posIndicator">
+        <div class="pos-label">Positivity Rate</div>
+        <div class="pos-bar">
+          <div class="pos-fill" id="posFill" style="width:0%"></div>
+        </div>
+        <div class="pos-rate" id="posRate">0.0%</div>
+      </div>
+
+      <div class="form-group" style="margin-top:20px">
+        <label class="form-label">Counsellor Name <span class="hint">(optional)</span></label>
+        <input type="text" class="form-control" id="fCounsellor" placeholder="Name of ICTC counsellor">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goStep(3)">Next: Breakdown →</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: BREAKDOWN + SUBMIT -->
+    <div class="form-section" id="step3">
+
+      <div class="selected-info show" id="locationInfo3">
+        📍 <span id="locationText3"></span>
+      </div>
+
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">
+        Gender-wise breakdown of positive cases (optional but recommended)
+      </p>
+
+      <div class="form-row-3">
+        <div class="form-group">
+          <label class="form-label">Male +ve</label>
+          <input type="number" class="form-control" id="fMale" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Female +ve</label>
+          <input type="number" class="form-control" id="fFemale" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">TG +ve</label>
+          <input type="number" class="form-control" id="fTG" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Key Population Positive <span class="hint">(optional)</span></label>
+        <div class="form-row">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">FSW</label>
+            <input type="number" class="form-control" id="fFSW" placeholder="0" min="0">
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">MSM</label>
+            <input type="number" class="form-control" id="fMSM" placeholder="0" min="0">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Remarks <span class="hint">(optional)</span></label>
+        <textarea class="form-control" id="fRemarks" rows="3"
+          placeholder="Any special observations, challenges, or notes..."></textarea>
+      </div>
+
+      <!-- SHEET CONNECTED -->
+      <div style="background:var(--green-light);border:1px solid #86efac;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:var(--green);display:flex;align-items:center;gap:8px;">
+        ✅ <strong>Connected to Assam SACS Google Sheet</strong>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-submit" onclick="submitForm()">✓ Submit Report</button>
+      </div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Report Submitted!</div>
+      <div class="success-sub">Data has been recorded successfully</div>
+      <div class="success-summary" id="successSummary"></div>
+      <button class="btn-new" onclick="resetForm()">Submit Another Report</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── ASSAM DISTRICTS & BLOCKS ──────────────────────────────
+var DISTRICT_BLOCKS = {
+  "Baksa":              ["Baganpara","Baska","Goreswar","Nagrijuli","Pathorighat","Tamulpur"],
+  "Barpeta":            ["Barpeta","Barpeta Road","Chenga","Jania","Mandia","Patacharkuchi","Sarthebari","Sarukhetri"],
+  "Biswanath":          ["Behali","Biswanath Chariali","Gohpur","Jamugurihat","Sootea"],
+  "Bongaigaon":         ["Bongaigaon","Boitamari","Bijni","Manikpur","Sidli"],
+  "Cachar":             ["Barkhola","Borkhola","Dholai","Kabuganj","Lakhipur","Narsingpur","Silchar","Sonai","Udharbond"],
+  "Charaideo":          ["Charaideo","Dhodar Ali","Sapekhati","Sonari"],
+  "Chirang":            ["Bijni","Borobazar","Chirang","Sidli"],
+  "Darrang":            ["Dalgaon","Kharupetia","Mangaldoi","Patharughat","Sipajhar"],
+  "Dhemaji":            ["Dhemaji","Dhemaji Sadar","Jonai","Machkhowa","Murkongselek","Sissiborgaon"],
+  "Dhubri":             ["Agomoni","Bilasipara","Dhubri","Gauripur","Golakganj","Rupshi","Salkocha","South Salmara"],
+  "Dibrugarh":          ["Barbarua","Dibrugarh","Joypur","Khowang","Lahowal","Moran","Naharkatiya"],
+  "Dima Hasao":         ["Haflong","Harangajao","Jatinga","Mahur","Maibong"],
+  "Goalpara":           ["Balijana","Dudhnoi","Goalpara","Krishnai","Lakhipur","Matia"],
+  "Golaghat":           ["Bokakhat","Dergaon","Golaghat","Khumtai","Sarupathar"],
+  "Hailakandi":         ["Algapur","Hailakandi","Katlicherra","Lala"],
+  "Hojai":              ["Doboka","Hojai","Lumding","Sankardev Nagar"],
+  "Jorhat":             ["Jorhat","Jorhat East","Jorhat North","Jorhat West","Mariani","Titabor"],
+  "Kamrup Metro":       ["Azara","Chandrapur","Gorchuk","Jalukbari","Kamrup","Rani","Sonapur"],
+  "Kamrup Rural":       ["Boko","Chhaygaon","Hajo","Kamalpur","Nagarbera","Rangia","Chamaria"],
+  "Karbi Anglong":      ["Bokolia","Diphu","Hamren","Howraghat","Langsomepi","Rongmongve","Singhason"],
+  "Karimganj":          ["Badarpur","Karimganj","Nilambazar","Patharkandi","Ratabari"],
+  "Kokrajhar":          ["Bhaoraguri","Gossaigaon","Kokrajhar","Mazbat","Parbatjhora","Sidli"],
+  "Lakhimpur":          ["Bihpuria","Boginadi","Ghilamara","Lakhimpur","Narayanpur","Naoboicha"],
+  "Majuli":             ["Majuli","Kamalabari","Jengraimukh","Salmora"],
+  "Morigaon":           ["Jagiroad","Laharighat","Morigaon","Mayong"],
+  "Nagaon":             ["Barhampur","Batadrava","Dhing","Hojai","Kaliabor","Kampur","Nagaon","Raha","Rupahi"],
+  "Nalbari":            ["Barkhetri","Ghograpar","Mukalmua","Nalbari","Paschim Nalbari","Tihu"],
+  "Sivasagar":          ["Amguri","Demow","Gaurisagar","Nazira","Sivasagar","Sonari"],
+  "Sonitpur":           ["Balipara","Biswanath","Dhekiajuli","Gohpur","Rangapara","Tezpur"],
+  "South Salmara":      ["Mankachar","South Salmara"],
+  "Tinsukia":           ["Doomdooma","Makum","Margherita","Sadiya","Tinsukia"],
+  "Udalguri":           ["Bhergaon","Dimakuchi","Kalaigaon","Mazbat","Panery","Udalguri"],
+  "West Karbi Anglong": ["Baithalangso","Bongkhar","Chinthong","Rongram","Tikrikilla"],
+  "Bajali":             ["Bajali","Pathsala","Bhabanipur","Pakabetbari"],
+  "Tamulpur":           ["Tamulpur","Nagrijuli","Barama","Tihu"]
+};
+
+// Populate districts
+var districtSel = document.getElementById("fDistrict");
+Object.keys(DISTRICT_BLOCKS).sort().forEach(function(d){
+  var opt = document.createElement("option");
+  opt.value = d; opt.textContent = d;
+  districtSel.appendChild(opt);
+});
+
+// Set today's date
+document.getElementById("fDate").value = new Date().toISOString().split("T")[0];
+
+// Load saved sheet ID
+var savedSheet = localStorage.getItem("ictc_form_sheet");
+if(savedSheet) document.getElementById("sheetIdForm").value = savedSheet;
+
+// ── DISTRICT CHANGE ──
+function onDistrictChange(){
+  var district = document.getElementById("fDistrict").value;
+  var blockSel = document.getElementById("fBlock");
+  blockSel.innerHTML = "<option value=''>— Select Block —</option>";
+
+  if(!district){
+    blockSel.disabled = true;
+    document.getElementById("locationInfo").classList.remove("show");
+    return;
+  }
+
+  var blocks = DISTRICT_BLOCKS[district] || [];
+  blocks.sort().forEach(function(b){
+    var opt = document.createElement("option");
+    opt.value = b; opt.textContent = b;
+    blockSel.appendChild(opt);
+  });
+  blockSel.disabled = false;
+
+  // Update hint
+  document.querySelector("#fBlock").closest(".form-group")
+    .querySelector(".hint").textContent = blocks.length + " blocks available";
+
+  document.getElementById("errDistrict").classList.remove("show");
+}
+
+// ── BLOCK CHANGE ──
+function onBlockChange(){
+  var district = document.getElementById("fDistrict").value;
+  var block    = document.getElementById("fBlock").value;
+  if(district && block){
+    var text = district + " → " + block;
+    document.getElementById("locationText").textContent  = text;
+    document.getElementById("locationText2").textContent = text;
+    document.getElementById("locationText3").textContent = text;
+    document.getElementById("locationInfo").classList.add("show");
+    document.getElementById("errBlock").classList.remove("show");
+  }
+}
+
+// ── POSITIVITY CALCULATOR ──
+function calcPositivity(){
+  var tested   = parseInt(document.getElementById("fTested").value)   || 0;
+  var positive = parseInt(document.getElementById("fPositive").value) || 0;
+  var indicator = document.getElementById("posIndicator");
+
+  if(tested > 0){
+    indicator.classList.add("show");
+    var rate = (positive / tested * 100);
+    var color = rate > 5 ? "#dc2626" : rate > 2 ? "#d97706" : rate > 1 ? "#ca8a04" : "#16a34a";
+    document.getElementById("posFill").style.width  = Math.min(rate * 5, 100) + "%";
+    document.getElementById("posFill").style.background = color;
+    document.getElementById("posRate").textContent  = rate.toFixed(1) + "% positivity";
+    document.getElementById("posRate").style.color  = color;
+  } else {
+    indicator.classList.remove("show");
+  }
+}
+
+// ── STEP NAVIGATION ──
+function goStep(n){
+  if(n === 2 && !validateStep1()) return;
+  if(n === 3 && !validateStep2()) return;
+
+  for(var i=1;i<=3;i++){
+    document.getElementById("step"+i).classList.toggle("active", i===n);
+    var tab = document.getElementById("step"+i+"tab");
+    tab.classList.remove("active","done");
+    if(i === n) tab.classList.add("active");
+    else if(i < n) tab.classList.add("done");
+  }
+}
+
+// ── VALIDATE STEP 1 ──
+function validateStep1(){
+  var ok = true;
+  var district = document.getElementById("fDistrict").value;
+  var block    = document.getElementById("fBlock").value;
+  var ictc     = document.getElementById("fICTC").value.trim();
+
+  if(!district){ document.getElementById("errDistrict").classList.add("show"); ok=false; }
+  else { document.getElementById("errDistrict").classList.remove("show"); }
+
+  if(!block){ document.getElementById("errBlock").classList.add("show"); ok=false; }
+  else { document.getElementById("errBlock").classList.remove("show"); }
+
+  if(!ictc){ document.getElementById("errICTC").classList.add("show"); ok=false; }
+  else { document.getElementById("errICTC").classList.remove("show"); }
+
+  return ok;
+}
+
+// ── VALIDATE STEP 2 ──
+function validateStep2(){
+  var tested   = parseInt(document.getElementById("fTested").value)   || 0;
+  var positive = parseInt(document.getElementById("fPositive").value) || 0;
+  var ok = true;
+
+  if(tested <= 0){
+    document.getElementById("errTested").classList.add("show");
+    document.getElementById("errTested").textContent = "Please enter number tested";
+    ok = false;
+  } else { document.getElementById("errTested").classList.remove("show"); }
+
+  if(positive > tested){
+    document.getElementById("errPositive").classList.add("show");
+    document.getElementById("errPositive").textContent = "Positive cannot exceed tested (" + tested + ")";
+    ok = false;
+  } else { document.getElementById("errPositive").classList.remove("show"); }
+
+  return ok;
+}
+
+// ── SUBMIT FORM ──
+function submitForm(){
+  if(!validateStep1() || !validateStep2()) return;
+
+  var district    = document.getElementById("fDistrict").value;
+  var block       = document.getElementById("fBlock").value;
+  var ictc        = document.getElementById("fICTC").value.trim();
+  var date        = document.getElementById("fDate").value;
+  var tested      = parseInt(document.getElementById("fTested").value)   || 0;
+  var positive    = parseInt(document.getElementById("fPositive").value) || 0;
+  var male        = parseInt(document.getElementById("fMale").value)     || 0;
+  var female      = parseInt(document.getElementById("fFemale").value)   || 0;
+  var tg          = parseInt(document.getElementById("fTG").value)       || 0;
+  var fsw         = parseInt(document.getElementById("fFSW").value)      || 0;
+  var msm         = parseInt(document.getElementById("fMSM").value)      || 0;
+  var counsellor  = document.getElementById("fCounsellor").value.trim();
+  var remarks     = document.getElementById("fRemarks").value.trim();
+  var sheetId     = "connected";
+  var rate        = tested > 0 ? (positive/tested*100).toFixed(1) : 0;
+
+  // Submit to Google Sheet
+  if(sheetId){
+    submitToSheet(sheetId, {
+      district, block, ictc, date, tested, positive,
+      male, female, tg, fsw, msm, counsellor, remarks
+    });
+  }
+
+  // Show success
+  var rateColor = rate > 5 ? "#dc2626" : rate > 2 ? "#d97706" : "#16a34a";
+  document.getElementById("successSummary").innerHTML =
+    "<div class='ss-row'><span class='ss-label'>District</span><span class='ss-value'>" + district + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>Block</span><span class='ss-value'>" + block + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>ICTC Center</span><span class='ss-value'>" + ictc + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>Date</span><span class='ss-value'>" + date + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>Total Tested</span><span class='ss-value'>" + tested + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>Total Positive</span><span class='ss-value' style='color:var(--red)'>" + positive + "</span></div>" +
+    "<div class='ss-row'><span class='ss-label'>Positivity Rate</span><span class='ss-value' style='color:" + rateColor + "'>" + rate + "%</span></div>";
+
+  // Hide form, show success
+  for(var i=1;i<=3;i++) document.getElementById("step"+i).classList.remove("active");
+  document.querySelector(".steps").style.display = "none";
+  document.getElementById("successScreen").classList.add("show");
+}
+
+// ── SUBMIT TO GOOGLE SHEET ──
+function submitToSheet(sheetId, data){
+  // Uses Google Apps Script Web App URL stored in localStorage
+  var scriptUrl = "https://script.google.com/macros/s/AKfycbw8P-3dVC_CwabLyWcPpTof7v7uH2osTBnNBH8so3zGW0j50fuGEGZKjoubnB45nLRj7g/exec";
+
+  var params = new URLSearchParams({
+    district:   data.district,
+    block:      data.block,
+    ictc:       data.ictc,
+    date:       data.date,
+    tested:     data.tested,
+    positive:   data.positive,
+    male:       data.male,
+    female:     data.female,
+    tg:         data.tg,
+    fsw:        data.fsw,
+    msm:        data.msm,
+    counsellor: data.counsellor,
+    remarks:    data.remarks
+  });
+
+  fetch(scriptUrl + "?" + params.toString(), { method:"GET", mode:"no-cors" })
+    .catch(function(e){ console.log("Sheet submit:", e); });
+}
+
+// ── RESET FORM ──
+function resetForm(){
+  document.getElementById("fDistrict").value  = "";
+  document.getElementById("fBlock").innerHTML = "<option value=''>— Select Block —</option>";
+  document.getElementById("fBlock").disabled  = true;
+  document.getElementById("fICTC").value      = "";
+  document.getElementById("fTested").value    = "";
+  document.getElementById("fPositive").value  = "";
+  document.getElementById("fMale").value      = "";
+  document.getElementById("fFemale").value    = "";
+  document.getElementById("fTG").value        = "";
+  document.getElementById("fFSW").value       = "";
+  document.getElementById("fMSM").value       = "";
+  document.getElementById("fCounsellor").value = "";
+  document.getElementById("fRemarks").value   = "";
+  document.getElementById("fDate").value      = new Date().toISOString().split("T")[0];
+  document.getElementById("locationInfo").classList.remove("show");
+  document.getElementById("posIndicator").classList.remove("show");
+  document.getElementById("successScreen").classList.remove("show");
+  document.querySelector(".steps").style.display = "flex";
+  goStep(1);
+}
+</script>
+</body>
+</html>
